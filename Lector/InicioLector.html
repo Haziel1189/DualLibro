@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualLibro - Catálogo Lector</title>
+    <link rel="stylesheet" href="cssLector/estilosLector.css">
+</head>
+<body>
+    <div class="contenedorPrincipal">
+        <header>
+            <h1>📚 Catálogo</h1>
+        </header>
+        
+        <nav>
+            <h2>Libros Disponibles</h2>
+            <input type="text" id="searchInput" placeholder="Filtrar libros..." class="search-input">
+        </nav>
+
+        <main>
+            <div class="libros-grid" id="librosGrid">
+                <!-- Los libros se cargarán dinámicamente -->
+            </div>
+        </main>
+
+        <footer class="footer">
+            <nav class="footer-nav">
+                <li><a href="InicioLector.html" class="footer-link">Inicio</a></li>
+                <li><a href="BuscarLector.html" class="footer-link">Buscar</a></li>
+                <li><a href="Correo.html" class="footer-link">Correo</a></li>
+                <li><a href="cuenta.html" class="footer-link">Cuenta</a></li>
+            </nav>
+        </footer>
+    </div>
+
+    <script src="lector.js"></script>
+    <script>
+        // ========================================
+        // CATÁLOGO DE LIBROS - InicioLector.html
+        // ========================================
+
+        let catalogo = [];
+
+        // Función para mostrar libros en la galería
+        function mostrarLibros(libros) {
+            const grid = document.getElementById('librosGrid');
+            grid.innerHTML = ''; // Limpia la galería antes de llenarla
+
+            if (libros.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 30px; color: #666;">No se encontraron libros</div>';
+                return;
+            }
+
+            libros.forEach(libro => {
+                const card = document.createElement('div');
+                card.className = 'libro-card'; // Estilo desde CSS
+                card.innerHTML = `
+                    <div class="libro-icono">📖</div>
+                    <h3>${libro.titulo}</h3>
+                    <p class="autor">${libro.autor}</p>
+                    <p class="genero">${libro.genero}</p>
+                    <button class="btn-leer" data-id="${libro.id}">Leer</button>
+                    <button class="btn-guardar" data-id="${libro.id}">Guardar</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Función para inicializar la página
+        async function inicializarPagina() {
+            const usuario = await verificarAutenticacion();
+            if (!usuario) return;
+
+            // Mostrar nombre de usuario
+            const headerTitle = document.querySelector('header h1');
+            if (headerTitle) {
+                headerTitle.textContent = `📚 Catálogo - ${usuario.nombre}`;
+            }
+
+            // Cargar catálogo
+            catalogo = await cargarCatalogo();
+            mostrarLibros(catalogo);
+        }
+
+        // Filtro de búsqueda en tiempo real
+        document.getElementById('searchInput').addEventListener('input', async function(e) {
+            const texto = e.target.value.trim();
+
+            if (texto.length === 0) {
+                mostrarLibros(catalogo);
+            } else {
+                const resultados = await buscarLibros(texto);
+                mostrarLibros(resultados);
+            }
+        });
+
+        // Manejar clics en botones
+        document.addEventListener('click', async function(event) {
+            const btnLeer = event.target.closest('.btn-leer');
+            const btnGuardar = event.target.closest('.btn-guardar');
+
+            if (btnLeer) {
+                const libroId = btnLeer.dataset.id;
+                if (libroId) {
+                    window.location.href = `lectura.html?bookId=${libroId}`;
+                }
+            }
+
+            if (btnGuardar) {
+                const libroId = btnGuardar.dataset.id;
+                if (libroId) {
+                    const resultado = await guardarEnBiblioteca(libroId);
+                    if (resultado.success) {
+                        mostrarMensaje('Libro guardado en tu biblioteca', 'success');
+                        btnGuardar.textContent = 'Guardado';
+                        btnGuardar.disabled = true;
+                    } else {
+                        mostrarMensaje(resultado.message || 'Error al guardar libro', 'error');
+                    }
+                }
+            }
+        });
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', inicializarPagina);
+    </script>
+</body>

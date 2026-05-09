@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualLibro - Crear Obra</title>
+    <link rel="stylesheet" href="Escritor estilos/creacion.css">
+</head>
+<body>
+    <div class="creator-shell">
+        <header class="creator-header">
+            <div>
+                <a href="InicioEscritor.html" class="back-link">← Regresar a mis obras</a>
+                <h1>Crear nueva obra</h1>
+                <p>Escribe tu historia con herramientas simples y claras.</p>
+            </div>
+        </header>
+
+        <section class="editor-panel">
+            <div class="tool-bar">
+                <button type="button" class="tool-btn" data-command="bold">Negrita</button>
+                <button type="button" class="tool-btn" data-command="italic">Itálica</button>
+                <button type="button" class="tool-btn" data-command="underline">Subrayado</button>
+                <button type="button" class="tool-btn" data-command="insertUnorderedList">Lista</button>
+                <button type="button" id="insertImageBtn" class="tool-btn">Insertar imagen</button>
+            </div>
+            <div id="editor" class="editor" contenteditable="true" spellcheck="true">
+                <p>Escribe tu historia aquí...</p>
+            </div>
+            <input type="file" id="imageUpload" accept="image/*" class="hidden-input">
+            <button id="saveDraftBtn" class="save-btn">Guardar</button>
+        </section>
+
+        <section class="save-panel hidden" id="savePanel">
+            <h2>Guardar obra</h2>
+            <form id="saveForm">
+                <label for="obraTitulo">Nombre de la obra</label>
+                <input type="text" id="obraTitulo" placeholder="Título de la obra" required>
+
+                <label for="obraGenero">Género</label>
+                <select id="obraGenero">
+                    <option value="">Seleccionar género</option>
+                    <option value="Ficción">Ficción</option>
+                    <option value="No Ficción">No Ficción</option>
+                    <option value="Ciencia Ficción">Ciencia Ficción</option>
+                    <option value="Fantasía">Fantasía</option>
+                    <option value="Romance">Romance</option>
+                    <option value="Misterio">Misterio</option>
+                    <option value="Terror">Terror</option>
+                    <option value="Aventura">Aventura</option>
+                    <option value="Biografía">Biografía</option>
+                    <option value="Historia">Historia</option>
+                    <option value="Poesía">Poesía</option>
+                    <option value="Otro">Otro</option>
+                </select>
+
+                <label for="obraDescripcion">Descripción</label>
+                <textarea id="obraDescripcion" placeholder="Breve descripción de tu obra..." rows="3"></textarea>
+
+                <label for="obraEstado">Estado</label>
+                <select id="obraEstado">
+                    <option value="borrador">Borrador</option>
+                    <option value="revision">En revisión</option>
+                    <option value="publicado">Publicado</option>
+                </select>
+
+                <button type="submit" class="save-final-btn">Confirmar guardado</button>
+            </form>
+            <p class="help-text">La obra puede quedar en borrador hasta que decidas publicarla.</p>
+        </section>
+    </div>
+
+    <script src="escritor.js"></script>
+    <script>
+        let obraEditando = null;
+        let editor = null;
+        let toolButtons = null;
+        let saveDraftBtn = null;
+        let savePanel = null;
+        let saveForm = null;
+
+        // Inicializar elementos del DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            editor = document.getElementById('editor');
+            toolButtons = document.querySelectorAll('.tool-btn');
+            saveDraftBtn = document.getElementById('saveDraftBtn');
+            savePanel = document.getElementById('savePanel');
+            saveForm = document.getElementById('saveForm');
+
+            // Verificar autenticación
+            verificarAutenticacion().then(usuario => {
+                if (!usuario) return;
+
+                // Verificar si estamos editando una obra
+                const urlParams = new URLSearchParams(window.location.search);
+                const obraId = urlParams.get('editar');
+
+                if (obraId) {
+                    cargarObraParaEditar(obraId);
+                }
+
+                inicializarEditor();
+            });
+        });
+
+        // Función para inicializar el editor
+        function inicializarEditor() {
+            // Botones del editor para aplicar formato básico al contenido
+            toolButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const command = btn.dataset.command;
+                    document.execCommand(command, false, null);
+                    editor.focus();
+                });
+            });
+
+            // Mostrar panel de guardado cuando el usuario ya agregó contenido
+            saveDraftBtn.addEventListener('click', () => {
+                if (editor.innerText.trim().length === 0) {
+                    mostrarMensaje('Agrega contenido antes de guardar.', 'warning');
+                    return;
+                }
+                savePanel.classList.remove('hidden');
+                savePanel.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            // Guardar la obra
+            saveForm.addEventListener('submit', async event => {
+                event.preventDefault();
+
+                const titulo = document.getElementById('obraTitulo').value.trim();
+                const genero = document.getElementById('obraGenero').value.trim();
+                const descripcion = document.getElementById('obraDescripcion').value.trim();
+                const estado = document.getElementById('obraEstado').value;
+                const contenido = editor.innerHTML;
+
+                if (!titulo) {
+                    mostrarMensaje('Ingresa un nombre para tu obra.', 'error');
+                    return;
+                }
+
+                try {
+                    let resultado;
+
+                    if (obraEditando) {
+                        // Actualizar obra existente
+                        resultado = await actualizarObra(obraEditando.id, {
+                            titulo: titulo,
+                            genero: genero,
+                            descripcion: descripcion,
+                            estado: estado,
+                            contenido: contenido
+                        });
+                    } else {
+                        // Crear nueva obra
+                        resultado = await crearNuevaObra({
+                            titulo: titulo,
+                            genero: genero,
+                            descripcion: descripcion,
+                            contenido: contenido
+                        });
+                    }
+
+                    if (resultado.success) {
+                        const accion = obraEditando ? 'actualizada' : 'creada';
+                        mostrarMensaje(`Obra ${accion} exitosamente como "${titulo}".`, 'success');
+
+                        // Redirigir después de un delay
+                        setTimeout(() => {
+                            window.location.href = 'InicioEscritor.html';
+                        }, 2000);
+                    } else {
+                        mostrarMensaje(resultado.message || 'Error al guardar la obra.', 'error');
+                    }
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    mostrarMensaje('Error de conexión. Intente nuevamente.', 'error');
+                }
+            });
+
+            // Manejar inserción de imágenes
+            inicializarInsercionImagenes();
+        }
+
+        // Función para cargar obra para editar
+        async function cargarObraParaEditar(obraId) {
+            try {
+                // Por ahora, como no tenemos API específica para obtener una obra individual,
+                // obtenemos todas las obras del usuario y filtramos
+                const obras = await cargarObrasUsuario();
+                obraEditando = obras.find(obra => obra.id == obraId);
+
+                if (!obraEditando) {
+                    mostrarMensaje('Obra no encontrada.', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'InicioEscritor.html';
+                    }, 2000);
+                    return;
+                }
+
+                // Actualizar título de la página
+                document.querySelector('h1').textContent = 'Editar obra';
+                document.querySelector('.back-link').textContent = '← Regresar a mis obras';
+
+                // Cargar datos en el formulario
+                document.getElementById('obraTitulo').value = obraEditando.titulo || '';
+                document.getElementById('obraGenero').value = obraEditando.genero || '';
+                document.getElementById('obraDescripcion').value = obraEditando.descripcion || '';
+                document.getElementById('obraEstado').value = obraEditando.estado || 'borrador';
+
+                // Cargar contenido en el editor
+                if (obraEditando.contenido) {
+                    editor.innerHTML = obraEditando.contenido;
+                }
+
+            } catch (error) {
+                console.error('Error cargando obra:', error);
+                mostrarMensaje('Error al cargar la obra.', 'error');
+            }
+        }
+
+        // Función para inicializar inserción de imágenes
+        function inicializarInsercionImagenes() {
+            const insertImageBtn = document.getElementById('insertImageBtn');
+            const imageUpload = document.getElementById('imageUpload');
+
+            insertImageBtn.addEventListener('click', () => {
+                const imageUrl = prompt('Ingresa la URL de la imagen o usa el selector para cargar desde tu dispositivo:');
+                if (imageUrl) {
+                    document.execCommand('insertImage', false, imageUrl);
+                    editor.focus();
+                    return;
+                }
+                imageUpload.click();
+            });
+
+            imageUpload.addEventListener('change', event => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.execCommand('insertImage', false, e.target.result);
+                    editor.focus();
+                };
+                reader.readAsDataURL(file);
+                imageUpload.value = '';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualLibro - Lectura</title>
+    <link rel="stylesheet" href="lectura.css">
+</head>
+<body>
+    <div class="reader-shell">
+        <header class="reader-header">
+            <div>
+                <a href="InicioLector.html" class="reader-back">← Volver al catálogo</a>
+                <h1 id="bookTitle">Leyendo...</h1>
+                <p id="bookAuthor">Selecciona un libro desde el catálogo</p>
+            </div>
+            <div class="reader-status">
+                <span id="themeLabel">Tema: automático</span>
+            </div>
+        </header>
+
+        <main class="reader-main">
+            <section class="reader-content" id="bookContent">
+                <p>Al seleccionar un libro en el catálogo podrás leer su contenido aquí.</p>
+            </section>
+            <aside class="reader-info">
+                <div class="info-card">
+                    <h2>Consejo de lectura</h2>
+                    <p>Mantén una postura cómoda y cambia de postura cada tanto. Te recordaremos hacer una pausa cada 10 minutos.</p>
+                </div>
+                <div class="info-card">
+                    <h2>Progreso</h2>
+                    <p>La página cambiará de tonalidad según el horario para cuidar tu vista.</p>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="break-overlay hidden" id="breakOverlay">
+        <div class="break-box">
+            <h2>¡Hora de despejarte!</h2>
+            <p>Tómate 5 segundos para relajar la vista y volver con más atención.</p>
+            <button id="continueBtn">Continuar leyendo</button>
+        </div>
+    </div>
+
+    <script src="../db.js"></script>
+    <script>
+        const bookTitle = document.getElementById('bookTitle');
+        const bookAuthor = document.getElementById('bookAuthor');
+        const bookContent = document.getElementById('bookContent');
+        const themeLabel = document.getElementById('themeLabel');
+        const overlay = document.getElementById('breakOverlay');
+        const continueBtn = document.getElementById('continueBtn');
+        let breakTimer = null;
+        let hideTimer = null;
+
+        // Devuelve el valor de un parámetro en la URL.
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Carga el libro actual desde la base de datos local.
+        function cargarLibro() {
+            const bookId = getQueryParam('bookId');
+            const libro = getBookById(bookId);
+
+            if (!libro) {
+                bookTitle.textContent = 'No se encontró el libro';
+                bookAuthor.textContent = 'Regresa al catálogo y selecciona otra obra.';
+                bookContent.innerHTML = '<p>El libro solicitado no existe o no se ha seleccionado correctamente.</p>';
+                return;
+            }
+
+            bookTitle.textContent = libro.titulo;
+            bookAuthor.textContent = `por ${libro.autor}`;
+            bookContent.innerHTML = libro.contenido.map(parrafo => `<p>${parrafo}</p>`).join('');
+        }
+
+        // Aplica el tema de lectura según la hora del día.
+        function aplicarTemaHora() {
+            const hora = new Date().getHours();
+            const body = document.body;
+            body.classList.remove('tema-manana', 'tema-tarde', 'tema-noche', 'tema-madrugada');
+
+            if (hora >= 6 && hora < 12) {
+                body.classList.add('tema-manana');
+                themeLabel.textContent = 'Tema: mañana';
+            } else if (hora >= 12 && hora < 18) {
+                body.classList.add('tema-tarde');
+                themeLabel.textContent = 'Tema: tarde';
+            } else if (hora >= 18 && hora < 22) {
+                body.classList.add('tema-noche');
+                themeLabel.textContent = 'Tema: noche';
+            } else {
+                body.classList.add('tema-madrugada');
+                themeLabel.textContent = 'Tema: madrugada';
+            }
+        }
+
+        // Muestra la ventana emergente de descanso por 5 segundos.
+        function mostrarRecordatorio() {
+            overlay.classList.remove('hidden');
+            hideTimer = setTimeout(() => {
+                overlay.classList.add('hidden');
+                iniciarTemporizadorDescanso();
+            }, 5000);
+        }
+
+        // Inicia el temporizador de 10 minutos para mostrar el descanso.
+        function iniciarTemporizadorDescanso() {
+            if (breakTimer) {
+                clearTimeout(breakTimer);
+            }
+            breakTimer = setTimeout(mostrarRecordatorio, 600000);
+        }
+
+        continueBtn.addEventListener('click', () => {
+            overlay.classList.add('hidden');
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+            }
+            iniciarTemporizadorDescanso();
+        });
+
+        window.addEventListener('load', () => {
+            aplicarTemaHora();
+            cargarLibro();
+            iniciarTemporizadorDescanso();
+        });
+    </script>
+</body>
+</html>

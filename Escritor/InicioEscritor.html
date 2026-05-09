@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualLibro - Mis Obras</title>
+    <link rel="stylesheet" href="Escritor estilos/escritor.css">
+</head>
+<body>
+    <div class="contenedorPrincipal">
+        <header>
+            <h1>✍️ Mis Obras</h1>
+        </header>
+
+        <nav>
+            <h2>Mis Creaciones</h2>
+            <button class="btn-crear" id="btnCrear">+ Crear nueva obra</button>
+        </nav>
+
+        <main>
+            <div class="obras-grid" id="obrasGrid">
+                <!-- Las obras se cargarán dinámicamente -->
+            </div>
+        </main>
+
+        <footer class="footer">
+            <nav class="footer-nav">
+                <li><a href="InicioEscritor.html" class="footer-link">Inicio</a></li>
+                <li><a href="Correo.html" class="footer-link">Correo</a></li>
+                <li><a href="cuenta.html" class="footer-link">Cuenta</a></li>
+            </nav>
+        </footer>
+    </div>
+
+    <script src="escritor.js"></script>
+    <script>
+        // ========================================
+        // MIS OBRAS - InicioEscritor.html
+        // ========================================
+
+        let misObras = [];
+
+        // Función para mostrar las obras en la galería
+        function mostrarObras() {
+            const grid = document.getElementById('obrasGrid');
+            grid.innerHTML = ''; // Limpia la galería
+
+            if (misObras.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">No tienes obras aún. ¡Crea una nueva!</div>';
+                return;
+            }
+
+            // Recorre cada obra y crea su tarjeta
+            misObras.forEach(obra => {
+                const card = document.createElement('div');
+                card.className = 'obra-card'; // Estilo desde CSS
+
+                // Asigna un color según el estado de la obra
+                const colorEstatus = obra.estado === 'publicado' ? '#4CAF50' :
+                                     obra.estado === 'revision' ? '#FF9800' : '#999';
+
+                card.innerHTML = `
+                    <h3>${obra.titulo}</h3>
+                    <div class="obra-info">
+                        <p><strong>Capítulos:</strong> ${obra.capitulos || 0}</p>
+                        <p><strong>Estado:</strong> <span style="color: ${colorEstatus};">●</span> ${obra.estado.charAt(0).toUpperCase() + obra.estado.slice(1)}</p>
+                        <p style="font-size: 12px; color: #999;">${formatearFecha(obra.fecha_publicacion)}</p>
+                    </div>
+                    <div class="obra-acciones">
+                        <button class="btn-small btn-editar" data-id="${obra.id}">Editar</button>
+                        <button class="btn-small btn-ver" data-id="${obra.id}">Ver</button>
+                        <button class="btn-small btn-eliminar" data-id="${obra.id}" style="background: #f44336;">Eliminar</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Función para cargar obras del usuario
+        async function cargarObrasUsuario() {
+            const usuario = await verificarAutenticacion();
+            if (!usuario) return;
+
+            // Mostrar nombre de usuario
+            const headerTitle = document.querySelector('header h1');
+            if (headerTitle) {
+                headerTitle.textContent = `✍️ Mis Obras - ${usuario.nombre}`;
+            }
+
+            misObras = await cargarObrasUsuario();
+            mostrarObras();
+        }
+
+        // Event listener para el botón "Crear nueva obra"
+        document.getElementById('btnCrear').addEventListener('click', function() {
+            window.location.href = 'Creacion.html';
+        });
+
+        // Event listeners para acciones de obras
+        document.addEventListener('click', async function(event) {
+            const btnEditar = event.target.closest('.btn-editar');
+            const btnVer = event.target.closest('.btn-ver');
+            const btnEliminar = event.target.closest('.btn-eliminar');
+
+            if (btnEditar) {
+                const obraId = btnEditar.dataset.id;
+                if (obraId) {
+                    // Por ahora redirigir a página de creación con parámetro de edición
+                    window.location.href = `Creacion.html?editar=${obraId}`;
+                }
+            }
+
+            if (btnVer) {
+                const obraId = btnVer.dataset.id;
+                if (obraId) {
+                    // Por ahora mostrar detalles (podría redirigir a página de vista)
+                    mostrarMensaje('Funcionalidad de vista próximamente', 'info');
+                }
+            }
+
+            if (btnEliminar) {
+                const obraId = btnEliminar.dataset.id;
+                if (obraId) {
+                    const confirmar = confirm('¿Estás seguro de que quieres eliminar esta obra? Esta acción no se puede deshacer.');
+                    if (!confirmar) return;
+
+                    const resultado = await eliminarObra(obraId);
+                    if (resultado.success) {
+                        mostrarMensaje('Obra eliminada exitosamente', 'success');
+                        await cargarObrasUsuario(); // Recargar lista
+                    } else {
+                        mostrarMensaje(resultado.message || 'Error al eliminar obra', 'error');
+                    }
+                }
+            }
+        });
+
+        // Inicializar la página
+        document.addEventListener('DOMContentLoaded', cargarObrasUsuario);
+    </script>
+</body>

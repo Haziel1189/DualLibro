@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualLibro - Correo Escritor</title>
+    <link rel="stylesheet" href="Escritor estilos/escritor.css">
+</head>
+<body>
+    <div class="contenedorPrincipal">
+        <header>
+            <h1>📬 Mis Correos</h1>
+        </header>
+
+        <nav>
+            <h2>Notificaciones</h2>
+            <p style="font-size: 13px; color: #666; margin-top: 5px;">Tienes <span id="notCount">2</span> notificación(es) nueva(s)</p>
+        </nav>
+
+        <main>
+            <div class="correos-list" id="correosList">
+                <!-- Los correos se cargarán aquí -->
+            </div>
+        </main>
+
+        <footer class="footer">
+            <nav class="footer-nav">
+                <li><a href="InicioEscritor.html" class="footer-link">Inicio</a></li>
+                <li><a href="Correo.html" class="footer-link">Correo</a></li>
+                <li><a href="cuenta.html" class="footer-link">Cuenta</a></li>
+            </nav>
+        </footer>
+    </div>
+
+    <script src="escritor.js"></script>
+    <script>
+        // ========================================
+        // CORREOS Y NOTIFICACIONES - Escritor
+        // ========================================
+
+        let notificaciones = [];
+
+        // Función para actualizar contador de notificaciones
+        async function actualizarConteoNotificaciones() {
+            const noLeidas = await contarNotificacionesNoLeidas();
+            document.getElementById('notCount').textContent = noLeidas;
+        }
+
+        // Función para mostrar los correos en la lista
+        function mostrarCorreos() {
+            const lista = document.getElementById('correosList');
+            lista.innerHTML = ''; // Limpia la lista
+
+            if (notificaciones.length === 0) {
+                lista.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No tienes notificaciones</div>';
+                return;
+            }
+
+            // Recorre cada notificación y crea su elemento en la lista
+            notificaciones.forEach(notificacion => {
+                const item = document.createElement('div');
+                item.className = `correo-item ${notificacion.leida ? 'leido' : 'nuevo'}`;
+                item.dataset.id = notificacion.id;
+                item.innerHTML = `
+                    <div class="correo-header">
+                        <h3>${notificacion.titulo}</h3>
+                        <span class="fecha">${formatearFecha(notificacion.fecha_creacion)}</span>
+                    </div>
+                    <p class="mensaje">${notificacion.mensaje}</p>
+                    ${!notificacion.leida ? '<span class="badge-nuevo">●</span>' : ''}
+                    ${!notificacion.leida ? '<button class="btn-marcar-leida" data-id="' + notificacion.id + '">Marcar como leída</button>' : ''}
+                `;
+                lista.appendChild(item);
+            });
+        }
+
+        // Función para cargar notificaciones del usuario
+        async function cargarNotificacionesUsuario() {
+            const usuario = await verificarAutenticacion();
+            if (!usuario) return;
+
+            const data = await cargarNotificaciones();
+            notificaciones = data.notificaciones || [];
+            mostrarCorreos();
+            await actualizarConteoNotificaciones();
+        }
+
+        // Event listener para marcar notificaciones como leídas
+        document.addEventListener('click', async function(event) {
+            const btnMarcarLeida = event.target.closest('.btn-marcar-leida');
+            const correoItem = event.target.closest('.correo-item');
+
+            if (btnMarcarLeida) {
+                const notificacionId = btnMarcarLeida.dataset.id;
+                if (notificacionId) {
+                    const resultado = await marcarNotificacionLeida(notificacionId);
+                    if (resultado.success) {
+                        // Actualizar estado local
+                        const notif = notificaciones.find(n => n.id == notificacionId);
+                        if (notif) {
+                            notif.leida = true;
+                        }
+                        mostrarCorreos();
+                        await actualizarConteoNotificaciones();
+                    } else {
+                        mostrarMensaje('Error al marcar notificación como leída', 'error');
+                    }
+                }
+            }
+
+            // Marcar como leída al hacer clic en el item (si no está leída)
+            if (correoItem && !correoItem.classList.contains('leido')) {
+                const notificacionId = correoItem.dataset.id;
+                if (notificacionId) {
+                    const resultado = await marcarNotificacionLeida(notificacionId);
+                    if (resultado.success) {
+                        const notif = notificaciones.find(n => n.id == notificacionId);
+                        if (notif) {
+                            notif.leida = true;
+                        }
+                        mostrarCorreos();
+                        await actualizarConteoNotificaciones();
+                    }
+                }
+            }
+        });
+
+        // Inicializar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarNotificacionesUsuario();
+        });
+    </script>
+</body>

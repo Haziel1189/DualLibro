@@ -1,0 +1,165 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background: #f5f2ef;
+    color: #222;
+    padding: 20px;
+}
+
+.creator-shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+}
+
+.creator-header {
+    margin-bottom: 20px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: #8b0000;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.creator-header h1 {
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.creator-header p {
+    color: #555;
+}
+
+.tool-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.tool-btn {
+    background: #e7e2de;
+    border: 1px solid #d1c7c1;
+    border-radius: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    color: #333;
+    font-weight: 600;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.tool-btn:hover {
+    background: #d9d1c9;
+    transform: translateY(-1px);
+}
+
+.editor {
+    min-height: 320px;
+    padding: 18px;
+    border: 1px solid #ccc;
+    border-radius: 16px;
+    background: #fcfbf9;
+    line-height: 1.8;
+    margin-bottom: 16px;
+    overflow-y: auto;
+}
+
+.editor img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin: 14px 0;
+    display: block;
+}
+
+.hidden-input {
+    display: none;
+}
+
+.editor:focus {
+    outline: 2px solid #8b0000;
+}
+
+.save-btn,
+.save-final-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 22px;
+    background: #8b0000;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.save-btn:hover,
+.save-final-btn:hover {
+    background: #6a0000;
+}
+
+.save-panel {
+    margin-top: 24px;
+    padding: 22px;
+    background: #fbf8f4;
+    border: 1px solid #e3d8d0;
+    border-radius: 18px;
+}
+
+.save-panel.hidden {
+    display: none;
+}
+
+.save-panel h2 {
+    margin-bottom: 16px;
+}
+
+.save-panel label {
+    display: block;
+    margin-bottom: 8px;
+    color: #444;
+    font-weight: 600;
+}
+
+.save-panel input,
+.save-panel select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    font-size: 15px;
+}
+
+.help-text {
+    margin-top: 10px;
+    color: #666;
+    font-size: 14px;
+}
+
+@media (max-width: 900px) {
+    .creator-shell {
+        padding: 18px;
+    }
+
+    .editor {
+        min-height: 260px;
+    }
+}

@@ -1,0 +1,106 @@
+<?php
+// =========================================
+// config.php.example - COPIA ESTO A config.php Y LLENA TUS DATOS
+// =========================================
+// 🔒 INSTRUCCIONES:
+// 1. Copia este archivo
+// 2. Renómbralo a "config.php"
+// 3. Llena tus credenciales de MySQL
+// 4. Nunca subas config.php a GitHub
+// =========================================
+
+// Configuración de la base de datos
+define('DB_HOST', 'localhost');           // Host del servidor MySQL
+define('DB_NAME', 'duallibro_db');        // Nombre de tu base de datos
+define('DB_USER', 'root');                // Usuario de MySQL
+define('DB_PASS', '');                    // Contraseña de MySQL (vacío si no tienes)
+
+// Configuración de la aplicación
+define('APP_NAME', 'DualLibro');
+define('APP_VERSION', '1.0.0');
+define('APP_URL', 'http://localhost:8080/DualLibro');
+
+// Configuración de sesiones
+define('SESSION_LIFETIME', 3600 * 24 * 7); // 7 días
+
+// Configuración de CORS (para desarrollo)
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Content-Type: application/json; charset=utf-8');
+
+// Si es una petición OPTIONS (preflight), terminar aquí
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit(0);
+}
+
+// =========================================
+// FUNCIONES DE UTILIDAD
+// =========================================
+
+// Función para obtener la conexión a la base de datos
+function getDBConnection() {
+    static $conn = null;
+
+    if ($conn === null) {
+        try {
+            $conn = new PDO(
+                "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+                DB_USER,
+                DB_PASS,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false
+                ]
+            );
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error de conexión a la base de datos',
+                'error' => $e->getMessage()
+            ]);
+            exit;
+        }
+    }
+
+    return $conn;
+}
+
+// Función para validar email
+function validarEmail($email) {
+    return filter_var($email, FILTER_VALIDATE_EMAIL);
+}
+
+// Función para hashear contraseña
+function hashearPassword($password) {
+    return password_hash($password, PASSWORD_DEFAULT);
+}
+
+// Función para verificar contraseña
+function verificarPassword($password, $hash) {
+    return password_verify($password, $hash);
+}
+
+// Función para generar token único
+function generarToken() {
+    return bin2hex(random_bytes(32));
+}
+
+// Función para sanitizar entrada
+function sanitizar($data) {
+    if (is_array($data)) {
+        return array_map('sanitizar', $data);
+    }
+    return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
+}
+
+// Función para enviar respuesta JSON
+function enviarRespuesta($data, $statusCode = 200) {
+    http_response_code($statusCode);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+?>

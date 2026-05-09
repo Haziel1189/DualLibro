@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualLibro - Buscar</title>
+    <link rel="stylesheet" href="cssLector/estilosLector.css">
+</head>
+<body>
+    <div class="contenedorPrincipal">
+        <header>
+            <h1>🔎 Buscar Libros</h1>
+        </header>
+
+        <nav>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Busca por título, autor...">
+                <button>🔍</button>
+            </div>
+        </nav>
+
+        <main>
+            <div id="resultados">
+                <p style="text-align: center; color: #999; padding: 40px; font-style: italic;">Escribe para buscar libros...</p>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <nav class="footer-nav">
+                <li><a href="InicioLector.html" class="footer-link">Inicio</a></li>
+                <li><a href="BuscarLector.html" class="footer-link">Buscar</a></li>
+                <li><a href="Correo.html" class="footer-link">Correo</a></li>
+                <li><a href="cuenta.html" class="footer-link">Cuenta</a></li>
+            </nav>
+        </footer>
+    </div>
+
+    <script>
+        const libreria = [
+            { titulo: "Don Quijote", autor: "Cervantes", genero: "Clásico" },
+            { titulo: "1984", autor: "Orwell", genero: "Ficción" },
+            { titulo: "Cien Años de Soledad", autor: "García Márquez", genero: "Realismo Mágico" },
+            { titulo: "El Principito", autor: "Saint-Exupéry", genero: "Infantil" },
+            { titulo: "Ficciones", autor: "Borges", genero: "Cuentos" },
+            { titulo: "La Metamorfosis", autor: "Kafka", genero: "Ficción" },
+            { titulo: "Orgullo y Prejuicio", autor: "Austen", genero: "Romance" },
+            { titulo: "El Hobbit", autor: "Tolkien", genero: "Fantasía" },
+            { titulo: "El Gran Gatsby", autor: "Fitzgerald", genero: "Romance" },
+            { titulo: "Mujercitas", autor: "Alcott", genero: "Clásico" }
+        ];
+
+        function mostrarResultados(libros) {
+            const resultados = document.getElementById('resultados');
+            resultados.innerHTML = '';
+
+            if (libros.length === 0) {
+                resultados.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No se encontraron resultados</p>';
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'libros-grid';
+            
+            libros.forEach(libro => {
+                const card = document.createElement('div');
+                card.className = 'libro-card';
+                card.innerHTML = `
+                    <div class="libro-icono">📖</div>
+                    <h3>${libro.titulo}</h3>
+                    <p class="autor">${libro.autor}</p>
+                    <p class="genero">${libro.genero}</p>
+                    <button class="btn-leer">Leer</button>
+                `;
+                grid.appendChild(card);
+            });
+            
+            resultados.appendChild(grid);
+        }
+
+        document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            const texto = e.target.value.toLowerCase();
+            
+            if (texto === '') {
+                document.getElementById('resultados').innerHTML = '<p style="text-align: center; color: #999; padding: 40px; font-style: italic;">Escribe para buscar libros...</p>';
+                return;
+            }
+
+            const filtrados = libreria.filter(libro =>
+                libro.titulo.toLowerCase().includes(texto) ||
+                libro.autor.toLowerCase().includes(texto) ||
+                libro.genero.toLowerCase().includes(texto)
+            );
+            
+            mostrarResultados(filtrados);
+        });
+    </script>
+    </div>
+</body>

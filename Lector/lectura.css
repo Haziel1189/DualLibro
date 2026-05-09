@@ -1,0 +1,206 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    min-height: 100vh;
+    background-color: #f2f2f2;
+    color: #222;
+}
+
+.reader-shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.reader-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
+    margin-bottom: 20px;
+}
+
+.reader-back {
+    display: inline-block;
+    margin-bottom: 10px;
+    color: #8b0000;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.reader-back:hover {
+    text-decoration: underline;
+}
+
+.reader-header h1 {
+    font-size: 28px;
+    line-height: 1.2;
+}
+
+.reader-header p {
+    color: #555;
+    margin-top: 8px;
+}
+
+.reader-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 180px;
+    background: #fff3cd;
+    border-radius: 12px;
+    padding: 16px;
+    color: #5a3b00;
+    border: 1px solid #ffeeba;
+}
+
+.reader-main {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+.reader-content {
+    padding: 28px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.06);
+    line-height: 1.75;
+}
+
+.reader-content p {
+    margin-bottom: 18px;
+}
+
+.reader-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.info-card {
+    padding: 20px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e9e9e9;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.04);
+}
+
+.info-card h2 {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.break-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    z-index: 100;
+}
+
+.break-overlay.hidden {
+    display: none;
+}
+
+.break-box {
+    max-width: 420px;
+    width: 100%;
+    background: #fff;
+    border-radius: 18px;
+    padding: 28px;
+    text-align: center;
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.18);
+}
+
+.break-box h2 {
+    margin-bottom: 18px;
+    color: #8b0000;
+}
+
+.break-box p {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.break-box button {
+    padding: 12px 20px;
+    background: #8b0000;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.break-box button:hover {
+    background: #6a0000;
+}
+
+/* Temas según horario */
+.tema-manana {
+    background: linear-gradient(180deg, #fff8e7 0%, #f7efe1 100%);
+    color: #2c2c2c;
+}
+
+.tema-tarde {
+    background: linear-gradient(180deg, #fff5f0 0%, #f1e6df 100%);
+    color: #2e2e2e;
+}
+
+.tema-noche {
+    background: linear-gradient(180deg, #141827 0%, #2c3351 100%);
+    color: #ebebf5;
+}
+
+.tema-madrugada {
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    color: #d7dae4;
+}
+
+.tema-noche .reader-header,
+.tema-noche .reader-main .reader-content,
+.tema-noche .info-card {
+    background: rgba(30, 41, 59, 0.94);
+    color: #e2e8f0;
+}
+
+.tema-madrugada .reader-header,
+.tema-madrugada .reader-main .reader-content,
+.tema-madrugada .info-card {
+    background: rgba(15, 23, 42, 0.92);
+    color: #cbd5e1;
+}
+
+.tema-noche .reader-back,
+.tema-madrugada .reader-back {
+    color: #93c5fd;
+}
+
+@media (max-width: 900px) {
+    .reader-main {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .reader-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .reader-status {
+        width: 100%;
+    }
+}

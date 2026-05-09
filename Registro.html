@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualLibro - Registro</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="auth-header">
+            <a class="brand" href="InicioSesion.html">DualLibro</a>
+            <p>Regístrate como Lector o Escritor para comenzar.</p>
+        </header>
+        <main class="auth-card">
+            <h1>Crear cuenta</h1>
+            <input type="text" id="regUsername" placeholder="Nombre completo" autocomplete="name">
+            <input type="email" id="regEmail" placeholder="Correo electrónico" autocomplete="email">
+            <input type="password" id="regPassword" placeholder="Contraseña" autocomplete="new-password">
+            <select id="regRole">
+                <option value="">Selecciona rol</option>
+                <option value="lector">Lector</option>
+                <option value="escritor">Escritor</option>
+            </select>
+            <button id="createAccountBtn">Crear cuenta</button>
+            <p class="secondary-text">¿Ya tienes cuenta?</p>
+            <button id="loginBtn" class="secondary-btn">Ir a iniciar sesión</button>
+        </main>
+    </div>
+    <script src="registro.js"></script>
+    <script>
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            window.location.href = 'InicioSesion.html';
+        });
+    </script>
+</body>
+</html>

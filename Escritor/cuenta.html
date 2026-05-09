@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualLibro - Cuenta Escritor</title>
+    <link rel="stylesheet" href="Escritor estilos/estiloCuenta.css">
+</head>
+<body>
+    <div class="contenedorPrincipal">
+        <header>
+            <h1>Mi Cuenta</h1>
+        </header>
+
+        <nav>
+            <div class="perfil-container">
+                <div class="foto-perfil">👤</div>
+                <div class="info-usuario">
+                    <h2 id="nombreUsuario">*Nombre del usuario*</h2>
+                    <p><strong>Rol:</strong> <span id="rolUsuario">Escritor</span></p>
+                </div>
+            </div>
+        </nav>
+
+        <main>
+            <h1>Cambiar Rol</h1>
+
+            <div class="toggle-container">
+                <div class="toggle-switch active" id="rolToggle">
+                    <div class="toggle-slider">Escritor</div>
+                    <div class="toggle-label">Lector / Escritor</div>
+                </div>
+            </div>
+
+            <div class="biblioteca-section">
+                <h2>📚 Biblioteca Personal</h2>
+                <div class="libros-grid" id="librosGrid">
+                    <!-- Los libros se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <nav>
+                <li><a href="InicioEscritor.html">Inicio</a></li>
+                <li><a href="Correo.html">Correo</a></li>
+                <li><a href="cuenta.html">Cuenta</a></li>
+            </nav>
+        </footer>
+    </div>
+
+    <script src="escritor.js"></script>
+    <script>
+        // ========================================
+        // PERFIL DE USUARIO - ESCRITOR
+        // ========================================
+
+        let usuarioActual = null;
+
+        // ========================================
+        // FUNCIÓN: Cargar datos del usuario
+        // ========================================
+        async function cargarUsuario() {
+            const usuario = await verificarAutenticacion();
+            if (!usuario) return;
+
+            usuarioActual = usuario;
+
+            // Mostrar información del usuario
+            document.getElementById('nombreUsuario').textContent = usuario.nombre;
+            document.getElementById('rolUsuario').textContent = usuario.rol.charAt(0).toUpperCase() + usuario.rol.slice(1);
+
+            // Configurar toggle según rol actual
+            const toggle = document.getElementById('rolToggle');
+            const slider = toggle.querySelector('.toggle-slider');
+
+            if (usuario.rol === 'escritor') {
+                toggle.classList.add('active');
+                slider.textContent = 'Escritor';
+            } else {
+                toggle.classList.remove('active');
+                slider.textContent = 'Lector';
+            }
+
+            // Cargar biblioteca personal (para escritores muestra sus obras publicadas)
+            await cargarBiblioteca();
+        }
+
+        // ========================================
+        // FUNCIÓN: Cargar biblioteca personal
+        // ========================================
+        async function cargarBiblioteca() {
+            const librosGrid = document.getElementById('librosGrid');
+            librosGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 20px;">Cargando obras...</div>';
+
+            // Para escritores, mostrar sus obras publicadas
+            const obras = await cargarObrasUsuario();
+            const obrasPublicadas = obras.filter(obra => obra.estado === 'publicado');
+
+            librosGrid.innerHTML = ''; // Limpia la galería
+
+            if (obrasPublicadas.length === 0) {
+                librosGrid.innerHTML = '<div class="biblioteca-vacia">No tienes obras publicadas aún</div>';
+                return;
+            }
+
+            // Recorrer cada obra y crear su tarjeta
+            obrasPublicadas.forEach(obra => {
+                const libroCard = document.createElement('div');
+                libroCard.className = 'libro-card';
+                libroCard.innerHTML = `
+                    <div class="libro-icono">✍️</div>
+                    <h3>${obra.titulo}</h3>
+                    <p class="autor">Por: ${obra.autor || usuarioActual.nombre}</p>
+                    <p class="genero">${obra.genero || 'Sin género'}</p>
+                    <p class="fecha">Publicado: ${formatearFecha(obra.fecha_publicacion)}</p>
+                    <button class="btn-leer" data-id="${obra.id}">Ver detalles</button>
+                `;
+                librosGrid.appendChild(libroCard);
+            });
+        }
+
+        // ========================================
+        // EVENT LISTENER: Cambio de rol (Toggle)
+        // ========================================
+        document.getElementById('rolToggle').addEventListener('click', async function() {
+            if (!usuarioActual) return;
+
+            const toggle = this;
+            const slider = toggle.querySelector('.toggle-slider');
+            const nuevoRol = toggle.classList.contains('active') ? 'lector' : 'escritor';
+
+            // Mostrar confirmación
+            const confirmar = confirm(`¿Estás seguro de que quieres cambiar tu rol a ${nuevoRol.charAt(0).toUpperCase() + nuevoRol.slice(1)}?`);
+
+            if (!confirmar) return;
+
+            // Deshabilitar toggle durante la operación
+            toggle.style.pointerEvents = 'none';
+
+            const resultado = await cambiarRolUsuario(nuevoRol);
+
+            if (resultado.success) {
+                mostrarMensaje(`Rol cambiado exitosamente a ${nuevoRol.charAt(0).toUpperCase() + nuevoRol.slice(1)}`, 'success');
+
+                // Actualizar estado local
+                usuarioActual.rol = nuevoRol;
+                localStorage.setItem('userData', JSON.stringify(usuarioActual));
+
+                // Redirigir después de un delay
+                setTimeout(() => {
+                    if (nuevoRol === 'lector') {
+                        window.location.href = '../Lector/cuenta.html';
+                    } else {
+                        window.location.reload();
+                    }
+                }, 1500);
+            } else {
+                mostrarMensaje(resultado.message || 'Error al cambiar rol', 'error');
+                // Revertir toggle
+                toggle.classList.toggle('active');
+            }
+
+            // Rehabilitar toggle
+            toggle.style.pointerEvents = 'auto';
+        });
+
+        // ========================================
+        // EVENT LISTENER: Acciones de libros
+        // ========================================
+        document.addEventListener('click', async function(event) {
+            const btnLeer = event.target.closest('.btn-leer');
+
+            if (btnLeer) {
+                const libroId = btnLeer.dataset.id;
+                if (libroId) {
+                    // Mostrar detalles de la obra
+                    mostrarMensaje('Funcionalidad de detalles próximamente', 'info');
+                }
+            }
+        });
+
+        // ========================================
+        // INICIALIZACIÓN
+        // ========================================
+        document.addEventListener('DOMContentLoaded', cargarUsuario);
+    </script>
+</body>
+</html>

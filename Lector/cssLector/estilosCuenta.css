@@ -1,0 +1,301 @@
+/* ===== RESET / GLOBAL ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background-color: gray;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+    color: black;
+    margin-bottom: 100px;
+}
+
+.contenedorPrincipal {
+    display: grid;
+    grid-template-areas: 
+        "header"
+        "nav"
+        "main"
+        "footer";
+    background-color: darkred;
+    gap: 20px;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    margin: 0 auto;
+    border-radius: 15px;
+}
+
+/* ===== HEADER ===== */
+header {
+    grid-area: header;
+    background-color: grey;
+    text-align: center;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+header h1 {
+    font-size: 28px;
+    color: black;
+}
+
+/* ===== NAV - PERFIL ===== */
+nav {
+    grid-area: nav;
+    background-color: grey;
+    padding: 25px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.perfil-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+}
+
+.foto-perfil {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #87ceeb, #e0f6ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    flex-shrink: 0;
+    border: 3px solid darkred;
+}
+
+.info-usuario {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.info-usuario h2 {
+    font-size: 18px;
+    color: black;
+    margin: 0;
+    font-weight: bold;
+}
+
+.info-usuario p {
+    font-size: 16px;
+    color: black;
+    margin: 0;
+}
+
+/* ===== MAIN ===== */
+main {
+    grid-area: main;
+    background-color: grey;
+    padding: 25px;
+    border-radius: 8px;
+}
+
+main h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: black;
+}
+
+/* ===== TOGGLE SWITCH ===== */
+.toggle-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    background-color: #ddd;
+    border-radius: 25px;
+    width: 140px;
+    height: 60px;
+    position: relative;
+    cursor: pointer;
+    border: 2px solid darkred;
+    transition: all 0.3s ease;
+}
+
+.toggle-switch.active {
+    background-color: #4CAF50;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 50px;
+    height: 50px;
+    background-color: white;
+    border-radius: 50%;
+    transition: left 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: darkred;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.toggle-switch.active .toggle-slider {
+    left: calc(100% - 53px);
+}
+
+.toggle-label {
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    width: 100%;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.toggle-switch.active .toggle-label {
+    display: none;
+}
+
+/* ===== BIBLIOTECA PROPIA ===== */
+.biblioteca-section h2 {
+    font-size: 18px;
+    margin-top: 25px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: black;
+}
+
+.libros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.libro-card {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px solid darkred;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.libro-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.libro-card p {
+    font-size: 12px;
+    color: white;
+    font-weight: bold;
+    word-wrap: break-word;
+}
+
+.libro-icono {
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+.biblioteca-vacia {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* ===== FOOTER ===== */
+footer {
+    grid-area: footer;
+    background-color: grey;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+footer nav {
+    background-color: transparent;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-direction: row;
+}
+
+footer nav li {
+    list-style: none;
+}
+
+footer nav a {
+    color: black;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+footer nav a:hover {
+    background-color: darkred;
+    color: white;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+    .perfil-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .foto-perfil {
+        width: 100px;
+        height: 100px;
+        font-size: 50px;
+    }
+
+    .toggle-switch {
+        width: 120px;
+        height: 55px;
+    }
+
+    .toggle-slider {
+        width: 45px;
+        height: 45px;
+        font-size: 11px;
+    }
+
+    .toggle-switch.active .toggle-slider {
+        left: calc(100% - 50px);
+    }
+
+    .libros-grid {
+        grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+    }
+}

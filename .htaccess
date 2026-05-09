@@ -1,0 +1,122 @@
+# DualLibro - Configuración Apache
+# Este archivo configura el servidor web para la aplicación DualLibro
+
+# Habilitar mod_rewrite
+RewriteEngine On
+
+# Configuración de seguridad
+# Bloquear acceso a archivos sensibles
+<FilesMatch "\.(htaccess|htpasswd|ini|log|sh|inc|bak)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Bloquear acceso directo a archivos PHP de configuración
+<Files "config.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Configuración CORS para APIs
+<IfModule mod_headers.c>
+    # Permitir requests desde cualquier origen (en desarrollo)
+    # En producción, especificar los dominios permitidos
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    Header set Access-Control-Allow-Credentials "true"
+
+    # Manejar preflight requests
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ $1 [R=200,L]
+</IfModule>
+
+# Configuración de tipos MIME
+<IfModule mod_mime.c>
+    AddType application/json .json
+    AddType text/css .css
+    AddType application/javascript .js
+</IfModule>
+
+# Configuración de compresión
+<IfModule mod_deflate.c>
+    # Comprimir respuestas
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
+# Configuración de caché
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Archivos estáticos - caché agresiva
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+
+    # HTML - sin caché para contenido dinámico
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# Configuración de errores personalizados
+ErrorDocument 404 /404.html
+ErrorDocument 500 /500.html
+
+# Configuración de PHP
+<IfModule mod_php.c>
+    # Configuración de límites de PHP
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value memory_limit 128M
+
+    # Configuración de errores (deshabilitar en producción)
+    php_flag display_errors On
+    php_flag display_startup_errors On
+    php_value error_reporting E_ALL
+</IfModule>
+
+# Reglas de reescritura para URLs amigables (opcional)
+# Si deseas URLs como /api/libros en lugar de /libros.php
+# descomenta las siguientes líneas:
+
+# RewriteRule ^api/auth$ auth.php [L]
+# RewriteRule ^api/libros$ libros.php [L]
+# RewriteRule ^api/usuarios$ usuarios.php [L]
+# RewriteRule ^api/notificaciones$ notificaciones.php [L]
+
+# Proteger contra ataques comunes
+<IfModule mod_rewrite.c>
+    # Bloquear acceso a archivos con doble extensión
+    RewriteCond %{REQUEST_URI} \.(php|jsp|asp|exe|pl|cgi|scr|dll)\. [NC]
+    RewriteRule . - [F,L]
+
+    # Bloquear URLs con caracteres sospechosos
+    RewriteCond %{REQUEST_URI} (\.|\+|\;|\||<|>|'|"|\)|\(|%0A|%0D|%22|%27|%3C|%3E|%00).*\.php [NC]
+    RewriteRule . - [F,L]
+
+    # Prevenir hotlinking de imágenes
+    # RewriteCond %{HTTP_REFERER} !^$
+    # RewriteCond %{HTTP_REFERER} !^https?://(www\.)?tu-dominio\.com [NC]
+    # RewriteRule \.(png|jpg|jpeg|gif|svg)$ - [F,L]
+</IfModule>
+
+# Configuración de directorios
+# Estas directivas no son válidas en .htaccess, se manejan en la configuración del servidor.
+# Dejar solo reglas de rewrite y seguridad compatibles.
+
+# Logs de acceso (opcional)
+# CustomLog logs/duallibro_access.log combined
+# ErrorLog logs/duallibro_error.log

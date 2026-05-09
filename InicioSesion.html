@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualLibro - Iniciar Sesión</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="auth-header">
+            <a class="brand" href="InicioSesion.html">DualLibro</a>
+            <p>Accede a tu cuenta para leer o crear tus obras.</p>
+        </header>
+        <main class="auth-card">
+            <h1>Iniciar sesión</h1>
+            <input type="email" id="email" placeholder="Correo electrónico" autocomplete="email">
+            <input type="password" id="password" placeholder="Contraseña" autocomplete="current-password">
+            <button id="loginBtn">Iniciar sesión</button>
+            <p class="secondary-text">¿Aún no tienes cuenta?</p>
+            <button id="registerBtn" class="secondary-btn">Registrarse</button>
+        </main>
+    </div>
+    <script src="db.js"></script>
+    <script src="inicioSesion.js"></script>
+</body>
+</html>
