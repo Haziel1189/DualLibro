@@ -4,16 +4,11 @@
 
 // Función de login
 document.getElementById('loginBtn').addEventListener('click', async function() {
-    const email = document.getElementById('email').value.trim();
+    const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
 
-    if (!email || !password) {
-        mostrarMensaje('Por favor, ingrese email y contraseña.', 'error');
-        return;
-    }
-
-    if (!validarEmail(email)) {
-        mostrarMensaje('Por favor, ingrese un email válido.', 'error');
+    if (!username || !password) {
+        mostrarMensaje('Por favor, ingrese usuario y contraseña.', 'error');
         return;
     }
 
@@ -30,7 +25,7 @@ document.getElementById('loginBtn').addEventListener('click', async function() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                email: email,
+                nombre: username,
                 password: password
             })
         });

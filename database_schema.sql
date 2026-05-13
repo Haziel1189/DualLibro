@@ -13,7 +13,7 @@ USE duallibro_db;
 CREATE TABLE usuarios (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,
+    email VARCHAR(150) UNIQUE DEFAULT NULL,
     password VARCHAR(255) NOT NULL,
     rol ENUM('lector', 'escritor') DEFAULT 'lector',
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -65,6 +65,19 @@ CREATE TABLE notificaciones (
 );
 
 -- =========================================
+-- TABLA: comentarios
+-- =========================================
+CREATE TABLE comentarios (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_libro INT NOT NULL,
+    id_usuario INT NOT NULL,
+    comentario TEXT NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_libro) REFERENCES libros(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+-- =========================================
 -- TABLA: sesiones
 -- =========================================
 CREATE TABLE sesiones (
@@ -80,6 +93,7 @@ CREATE TABLE sesiones (
 -- =========================================
 -- ÍNDICES PARA MEJORAR PERFORMANCE
 -- =========================================
+CREATE UNIQUE INDEX idx_usuarios_nombre ON usuarios(nombre);
 CREATE INDEX idx_usuarios_email ON usuarios(email);
 CREATE INDEX idx_usuarios_rol ON usuarios(rol);
 CREATE INDEX idx_libros_autor ON libros(id_autor);
@@ -88,6 +102,8 @@ CREATE INDEX idx_libros_estado ON libros(estado);
 CREATE INDEX idx_biblioteca_usuario ON biblioteca_personal(id_usuario);
 CREATE INDEX idx_notificaciones_usuario ON notificaciones(id_usuario);
 CREATE INDEX idx_notificaciones_leida ON notificaciones(leida);
+CREATE INDEX idx_comentarios_libro ON comentarios(id_libro);
+CREATE INDEX idx_comentarios_usuario ON comentarios(id_usuario);
 CREATE INDEX idx_sesiones_token ON sesiones(token);
 CREATE INDEX idx_sesiones_usuario ON sesiones(id_usuario);
 

@@ -34,6 +34,20 @@
                 </div>
             </aside>
         </main>
+
+        <section class="reader-comments" id="readerComments">
+            <div class="info-card">
+                <h2>Comentarios</h2>
+                <div id="comentariosList" class="comentarios-list">
+                    <p>Cargando comentarios...</p>
+                </div>
+                <form id="commentForm" class="comment-form">
+                    <textarea id="commentText" placeholder="Deja un comentario sobre este libro..." rows="4"></textarea>
+                    <button type="submit">Enviar comentario</button>
+                    <p id="commentMessage" class="comment-message"></p>
+                </form>
+            </div>
+        </section>
     </div>
 
     <div class="break-overlay hidden" id="breakOverlay">
@@ -45,6 +59,7 @@
     </div>
 
     <script src="../db.js"></script>
+    <script src="lector.js"></script>
     <script>
         const bookTitle = document.getElementById('bookTitle');
         const bookAuthor = document.getElementById('bookAuthor');
@@ -52,6 +67,10 @@
         const themeLabel = document.getElementById('themeLabel');
         const overlay = document.getElementById('breakOverlay');
         const continueBtn = document.getElementById('continueBtn');
+        const comentariosList = document.getElementById('comentariosList');
+        const commentForm = document.getElementById('commentForm');
+        const commentText = document.getElementById('commentText');
+        const commentMessage = document.getElementById('commentMessage');
         let breakTimer = null;
         let hideTimer = null;
 
@@ -77,6 +96,81 @@
             bookAuthor.textContent = `por ${libro.autor}`;
             bookContent.innerHTML = libro.contenido.map(parrafo => `<p>${parrafo}</p>`).join('');
         }
+
+        // Carga los comentarios del libro desde la API
+        async function cargarComentarios() {
+            const bookId = getQueryParam('bookId');
+            if (!bookId) {
+                comentariosList.innerHTML = '<p>No se encontró el libro para mostrar comentarios.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`../libros.php?action=comentarios&id=${encodeURIComponent(bookId)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    mostrarComentarios(data.data);
+                } else {
+                    comentariosList.innerHTML = `<p>${data.message}</p>`;
+                }
+            } catch (error) {
+                comentariosList.innerHTML = '<p>Error cargando comentarios.</p>';
+                console.error('Error cargando comentarios:', error);
+            }
+        }
+
+        function mostrarComentarios(comentarios) {
+            if (!comentarios || comentarios.length === 0) {
+                comentariosList.innerHTML = '<div class="comentario-item"><p>No hay comentarios todavía. Sé el primero en comentar.</p></div>';
+                return;
+            }
+
+            comentariosList.innerHTML = comentarios.map(comentario => `
+                <div class="comentario-item">
+                    <div class="comentario-meta">
+                        <strong>${comentario.autor}</strong>
+                        <span>${new Date(comentario.fecha_creacion).toLocaleString('es-ES')}</span>
+                    </div>
+                    <p>${comentario.comentario}</p>
+                </div>
+            `).join('');
+        }
+
+        async function enviarComentario(event) {
+            event.preventDefault();
+            const bookId = getQueryParam('bookId');
+            const texto = commentText.value.trim();
+
+            if (!bookId || !texto) {
+                commentMessage.textContent = 'Por favor ingresa un comentario.';
+                return;
+            }
+
+            try {
+                await verificarAutenticacion();
+
+                const response = await fetch('../libros.php?action=comentar', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ libro_id: Number(bookId), comentario: texto })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    commentMessage.textContent = 'Comentario enviado correctamente.';
+                    commentText.value = '';
+                    cargarComentarios();
+                } else {
+                    commentMessage.textContent = data.message || 'Error al enviar el comentario.';
+                }
+            } catch (error) {
+                commentMessage.textContent = 'Error de conexión al enviar el comentario.';
+                console.error('Error enviando comentario:', error);
+            }
+        }
+
+        commentForm.addEventListener('submit', enviarComentario);
 
         // Aplica el tema de lectura según la hora del día.
         function aplicarTemaHora() {
@@ -127,6 +221,7 @@
         window.addEventListener('load', () => {
             aplicarTemaHora();
             cargarLibro();
+            cargarComentarios();
             iniciarTemporizadorDescanso();
         });
     </script>

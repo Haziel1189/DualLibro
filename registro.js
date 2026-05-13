@@ -5,23 +5,17 @@
 // Función de registro
 document.getElementById('createAccountBtn').addEventListener('click', async function() {
     const nombre = document.getElementById('regUsername').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
     const password = document.getElementById('regPassword').value.trim();
     const rol = document.getElementById('regRole').value;
 
     // Validaciones básicas
-    if (!nombre || !email || !password || !rol) {
+    if (!nombre || !password || !rol) {
         mostrarMensaje('Por favor, llene todos los campos.', 'error');
         return;
     }
 
     if (nombre.length < 2) {
         mostrarMensaje('El nombre debe tener al menos 2 caracteres.', 'error');
-        return;
-    }
-
-    if (!validarEmail(email)) {
-        mostrarMensaje('Por favor, ingrese un email válido.', 'error');
         return;
     }
 
@@ -49,7 +43,6 @@ document.getElementById('createAccountBtn').addEventListener('click', async func
             },
             body: JSON.stringify({
                 nombre: nombre,
-                email: email,
                 password: password,
                 rol: rol
             })

@@ -49,22 +49,22 @@ switch ($method) {
 function login() {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    if (!$data || !isset($data['email']) || !isset($data['password'])) {
-        enviarRespuesta(['success' => false, 'message' => 'Email y contraseña son requeridos'], 400);
+    if (!$data || !isset($data['nombre']) || !isset($data['password'])) {
+        enviarRespuesta(['success' => false, 'message' => 'Usuario y contraseña son requeridos'], 400);
     }
 
-    $email = sanitizar($data['email']);
+    $nombre = sanitizar($data['nombre']);
     $password = $data['password'];
 
-    if (!validarEmail($email)) {
-        enviarRespuesta(['success' => false, 'message' => 'Email no válido'], 400);
+    if (strlen($nombre) < 2) {
+        enviarRespuesta(['success' => false, 'message' => 'Usuario no válido'], 400);
     }
 
     $conn = getDBConnection();
 
-    // Buscar usuario por email
-    $stmt = $conn->prepare("SELECT * FROM usuarios WHERE email = ? AND activo = TRUE");
-    $stmt->execute([$email]);
+    // Buscar usuario por nombre de usuario
+    $stmt = $conn->prepare("SELECT * FROM usuarios WHERE nombre = ? AND activo = TRUE");
+    $stmt->execute([$nombre]);
     $usuario = $stmt->fetch();
 
     if (!$usuario || !verificarPassword($password, $usuario['password'])) {
@@ -105,22 +105,17 @@ function login() {
 function register() {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    if (!$data || !isset($data['nombre']) || !isset($data['email']) || !isset($data['password'])) {
-        enviarRespuesta(['success' => false, 'message' => 'Nombre, email y contraseña son requeridos'], 400);
+    if (!$data || !isset($data['nombre']) || !isset($data['password'])) {
+        enviarRespuesta(['success' => false, 'message' => 'Nombre de usuario y contraseña son requeridos'], 400);
     }
 
     $nombre = sanitizar($data['nombre']);
-    $email = sanitizar($data['email']);
     $password = $data['password'];
     $rol = isset($data['rol']) ? sanitizar($data['rol']) : 'lector';
 
     // Validaciones
     if (strlen($nombre) < 2) {
-        enviarRespuesta(['success' => false, 'message' => 'El nombre debe tener al menos 2 caracteres'], 400);
-    }
-
-    if (!validarEmail($email)) {
-        enviarRespuesta(['success' => false, 'message' => 'Email no válido'], 400);
+        enviarRespuesta(['success' => false, 'message' => 'El usuario debe tener al menos 2 caracteres'], 400);
     }
 
     if (strlen($password) < 6) {
@@ -133,22 +128,22 @@ function register() {
 
     $conn = getDBConnection();
 
-    // Verificar si el email ya existe
-    $stmt = $conn->prepare("SELECT id FROM usuarios WHERE email = ?");
-    $stmt->execute([$email]);
+    // Verificar si el usuario ya existe
+    $stmt = $conn->prepare("SELECT id FROM usuarios WHERE nombre = ?");
+    $stmt->execute([$nombre]);
     if ($stmt->fetch()) {
-        enviarRespuesta(['success' => false, 'message' => 'El email ya está registrado'], 409);
+        enviarRespuesta(['success' => false, 'message' => 'El usuario ya está registrado'], 409);
     }
 
     // Crear usuario
     $hashedPassword = hashearPassword($password);
-    $stmt = $conn->prepare("
-        INSERT INTO usuarios (nombre, email, password, rol)
-        VALUES (?, ?, ?, ?)
-    ");
+    $emailPlaceholder = generarEmailPlaceholder($nombre);
+    $stmt = $conn->prepare(
+        "INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)"
+    );
 
     try {
-        $stmt->execute([$nombre, $email, $hashedPassword, $rol]);
+        $stmt->execute([$nombre, $emailPlaceholder, $hashedPassword, $rol]);
         $usuarioId = $conn->lastInsertId();
 
         // Crear notificación de bienvenida
@@ -216,5 +211,14 @@ function verifySession() {
             ]
         ]
     ]);
+}
+
+// Función para generar un email de marcador de posición cuando no se solicita email
+function generarEmailPlaceholder($nombre) {
+    $username = preg_replace('/[^a-z0-9]/', '', strtolower($nombre));
+    if (empty($username)) {
+        $username = 'usuario';
+    }
+    return $username . '@duallibro.local';
 }
 ?>

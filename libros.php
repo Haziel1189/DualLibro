@@ -21,6 +21,9 @@ switch ($method) {
             case 'detalle':
                 getLibroDetalle();
                 break;
+            case 'comentarios':
+                getComentariosLibro();
+                break;
             case 'biblioteca':
                 getBibliotecaPersonal();
                 break;
@@ -39,6 +42,9 @@ switch ($method) {
                 break;
             case 'crear':
                 crearObra();
+                break;
+            case 'comentar':
+                comentarLibro();
                 break;
             default:
                 enviarRespuesta(['success' => false, 'message' => 'Acción no válida'], 400);
@@ -167,6 +173,83 @@ function getLibroDetalle() {
 
     } catch (Exception $e) {
         enviarRespuesta(['success' => false, 'message' => 'Error al obtener libro'], 500);
+    }
+}
+
+// Obtener comentarios de un libro
+function getComentariosLibro() {
+    $libroId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+    if ($libroId <= 0) {
+        enviarRespuesta(['success' => false, 'message' => 'ID de libro inválido'], 400);
+    }
+
+    $conn = getDBConnection();
+
+    try {
+        $stmt = $conn->prepare("SELECT c.id, c.comentario, c.fecha_creacion, u.nombre as autor FROM comentarios c
+                                 INNER JOIN usuarios u ON c.id_usuario = u.id
+                                 WHERE c.id_libro = ?
+                                 ORDER BY c.fecha_creacion DESC");
+        $stmt->execute([$libroId]);
+        $comentarios = $stmt->fetchAll();
+
+        enviarRespuesta([
+            'success' => true,
+            'data' => $comentarios
+        ]);
+    } catch (Exception $e) {
+        enviarRespuesta(['success' => false, 'message' => 'Error al obtener comentarios'], 500);
+    }
+}
+
+// Comentar en un libro y notificar al autor
+function comentarLibro() {
+    $usuario = getUsuarioActual();
+    if (!$usuario) {
+        enviarRespuesta(['success' => false, 'message' => 'No autorizado'], 401);
+    }
+
+    $data = json_decode(file_get_contents('php://input'), true);
+    $libroId = isset($data['libro_id']) ? (int)$data['libro_id'] : 0;
+    $comentario = isset($data['comentario']) ? trim($data['comentario']) : '';
+
+    if ($libroId <= 0 || empty($comentario)) {
+        enviarRespuesta(['success' => false, 'message' => 'ID de libro y comentario son requeridos'], 400);
+    }
+
+    $conn = getDBConnection();
+
+    try {
+        $stmt = $conn->prepare("SELECT id_autor, titulo FROM libros WHERE id = ? AND estado = 'publicado'");
+        $stmt->execute([$libroId]);
+        $libro = $stmt->fetch();
+
+        if (!$libro) {
+            enviarRespuesta(['success' => false, 'message' => 'Libro no encontrado'], 404);
+        }
+
+        $stmt = $conn->prepare("INSERT INTO comentarios (id_libro, id_usuario, comentario) VALUES (?, ?, ?)");
+        $stmt->execute([$libroId, $usuario['id'], $comentario]);
+
+        if ($libro['id_autor'] && $libro['id_autor'] != $usuario['id']) {
+            $tituloNotificacion = 'Tienes un nuevo comentario';
+            $mensajeNotificacion = sprintf(
+                'El lector %s comentó en tu libro "%s".',
+                $usuario['nombre'],
+                $libro['titulo']
+            );
+
+            $stmt = $conn->prepare("INSERT INTO notificaciones (id_usuario, titulo, mensaje, tipo) VALUES (?, ?, ?, 'info')");
+            $stmt->execute([$libro['id_autor'], $tituloNotificacion, $mensajeNotificacion]);
+        }
+
+        enviarRespuesta([
+            'success' => true,
+            'message' => 'Comentario agregado correctamente'
+        ], 201);
+    } catch (Exception $e) {
+        enviarRespuesta(['success' => false, 'message' => 'Error al guardar comentario'], 500);
     }
 }
 
