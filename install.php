@@ -150,18 +150,18 @@ try {
     $usuarios_count = $stmt->fetch()['count'];
 
     if ($usuarios_count == 0) {
-        // Datos de ejemplo (contraseña de ejemplo: "123456" hasheada)
+        // Datos de ejemplo (contraseña: "123456")
         $ejemplos_sql = [
             [
-                'nombre' => 'Juan Pérez',
+                'nombre' => 'juan',
                 'email' => 'juan@duallibro.local',
-                'password' => '$2y$10$Y.W6wYlVL6B8Yq.6t9k0COZuAr5hQYp5h5h5h5h5h5h5h5h5h5h5i',
+                'password' => '$2y$10$GuXAYyFa/S.fMfLUw.8sj.HfgqO/LdDC5ldhFb3g4JJ/zxVxNxIAW',
                 'rol' => 'lector'
             ],
             [
-                'nombre' => 'María García',
+                'nombre' => 'maria',
                 'email' => 'maria@duallibro.local',
-                'password' => '$2y$10$Y.W6wYlVL6B8Yq.6t9k0COZuAr5hQYp5h5h5h5h5h5h5h5h5h5h5i',
+                'password' => '$2y$10$GuXAYyFa/S.fMfLUw.8sj.HfgqO/LdDC5ldhFb3g4JJ/zxVxNxIAW',
                 'rol' => 'escritor'
             ]
         ];
