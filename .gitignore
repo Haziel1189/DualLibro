@@ -1,5 +1,7 @@
 # Archivos de configuración con credenciales (NUNCA subir a GitHub)
 config.php
+# Pero incluir el template de ejemplo
+!config.example.php
 
 # Archivos de sistema
 .DS_Store
@@ -30,9 +32,8 @@ logs/
 node_modules/
 package-lock.json
 
-# Archivos de XAMPP/Local
-xampp/
-.htaccess.bak
+# Archivos de instalación local
+.installed
 
 # Archivos de base de datos local (backup)
 *.sql.bak
